@@ -113,9 +113,13 @@
 
 (define up
   (lambda (L)
+    (define (flatten-first lst rest)
+      (if (null? lst)
+          rest
+          (cons (car lst) (flatten-first (cdr lst) rest))))
     (if (null? L) '()
         (if (list? (car L))
-            (append (car L) (up (cdr L)))
+            (flatten-first (car L) (up (cdr L)))
             (cons (car L) (up (cdr L))))
             )
             ))
