@@ -135,8 +135,6 @@
 ;; <lista> := ()
 ;;         | (<valor> <lista>)
 
-
-;Ejercicio 12
 (define zip
   (lambda (F L1 L2)
     (if (or (null? L1) (null? L2)) '()
@@ -152,6 +150,7 @@
 
 
 
+;Ejercicio 12
 ;; filter-acum : Num x Num x (A x Num -> A) x A x (Num -> Bool) -> A
 ;; Proposito:
 ;; a x b x F x acum x lter -> A : Procedimiento que aplica la función binaria F acumulando el resultado en acum
