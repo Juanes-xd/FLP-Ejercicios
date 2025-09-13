@@ -12,12 +12,22 @@
 ;; <par>   := (<valor1> <valor2>)
 ;; <producto-cartesiano> := (<par> <producto-cartesiano>) | ()
 
+
 (define cartesian-product
   (lambda (L1 L2)
-    (if (null? L1) '()
-        (cons (cons (car L1) (car L2))
-              (cartesian-product (cdr L1) L2))))
-  )
+    (define (pairs x ys)
+      (if (null? ys)
+          '()
+          (cons (list x (car ys)) (pairs x (cdr ys)))))
+    (if (null? L1)
+        '()
+        (append-pairs (pairs (car L1) L2)
+                     (cartesian-product (cdr L1) L2)))))
+
+;; append-pairs: concatena dos listas sin usar append
+(define (append-pairs l1 l2)
+  (if (null? l1) l2
+      (cons (car l1) (append-pairs (cdr l1) l2))))
 
 
 
@@ -71,9 +81,9 @@
         (+ (if (> x (car L2)) 1 0)
            (inversions-helper x (cdr L2))))))
            
-(inversions-helper 3 '(2 1 4))
+;(inversions-helper 3 '(2 1 4))
 ;2
-(inversions-helper 2 '(3 1 4))
+;(inversions-helper 2 '(3 1 4))
 ;1
 
 
