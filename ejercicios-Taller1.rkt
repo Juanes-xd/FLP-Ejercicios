@@ -180,7 +180,11 @@ E1 E2 L -> L': procedimiento que intercambia todas las apariciones de E1 por E2 
         (append-pairs (pairs (car L1) L2)
                      (cartesian-product (cdr L1) L2)))))
 
-;; append-pairs: concatena dos listas sin usar append
+;append-pairs
+;Proposito:
+;L1 x L2 -> L : Procedimiento que concatena dos listas L1 y L2 sin usar la función append.
+;<lista> := '()
+;        := (<valor> <lista>)
 (define (append-pairs l1 l2)
   (if (null? l1) l2
       (cons (car l1) (append-pairs (cdr l1) l2))))
