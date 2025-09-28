@@ -1,0 +1,86 @@
+#lang racket
+;; Autores: Juan David Olaya, Juan Esteban Ortiz, Jean Pierre Cardenas
+;; Profesor: Robinson Duque
+
+;; const-exp: Number -> Exp
+;; Construye una expresión constante
+;; Ejemplo: (const-exp 5) -> '(const-exp 5)
+(define (const-exp n) (list 'const-exp n))
+(define (add-exp a1 a2) (list 'add-exp a1 a2))
+(define (diff-exp a1 a2) (list 'diff-exp a1 a2))
+(define (mult-exp a1 a2) (list 'mult-exp a1 a2))
+(define (div-exp a1 a2) (list 'div-exp a1 a2))
+
+;; eval-exp: Exp -> Number
+;; Evalúa una expresión matemática representada con listas y devuelve su valor numérico
+;; Utiliza pattern matching para identificar el tipo de expresión y aplicar la operación correspondiente
+(define (eval-exp exp)
+  (match exp
+    [(list 'const-exp n) n]  ; Una constante se evalúa a sí misma
+    [(list 'add-exp e1 e2) (+ (eval-exp e1) (eval-exp e2))]      ; Suma recursiva
+    [(list 'diff-exp e1 e2) (- (eval-exp e1) (eval-exp e2))]     ; Resta recursiva
+    [(list 'mult-exp e1 e2) (* (eval-exp e1) (eval-exp e2))]     ; Multiplicación recursiva
+    [(list 'div-exp e1 e2) (/ (eval-exp e1) (eval-exp e2))]))    ; División recursiva
+
+
+(define ejemplo1 (add-exp (const-exp 1) (const-exp 2)))
+(define ejemplo2 (mult-exp (add-exp (const-exp 3) (const-exp 2)) (const-exp 4)))
+(define ejemplo3 (mult-exp (add-exp (const-exp 3) (const-exp 2))
+                           (div-exp (const-exp 4)
+                                    (diff-exp (const-exp 12) (const-exp 8)))))
+
+;; Pruebas
+(if (= (eval-exp ejemplo1) 3) "true" "false")
+(if (= (eval-exp ejemplo2) 20) "true" "false")
+(if (= (eval-exp ejemplo3) 5) "true" "false")
+
+;; Punto 2
+
+;; make-ConstExp: Number -> ConstExp
+;; Construye un datatype para constantes numéricas
+;; Ejemplo: (make-ConstExp 42) -> '(ConstExp 42)
+(define (make-ConstExp n) (list 'ConstExp n))
+(define (make-AddExp e1 e2) (list 'AddExp e1 e2))
+(define (make-DiffExp e1 e2) (list 'DiffExp e1 e2))
+(define (make-MultExp e1 e2) (list 'MultExp e1 e2))
+(define (make-DivExp e1 e2) (list 'DivExp e1 e2))
+
+;; Los predicados verifican si un valor es de un tipo específico
+;; ConstExp?: Any -> Boolean
+;; Verifica si una expresión es una constante
+(define (ConstExp? exp) (and (list? exp) (eq? (car exp) 'ConstExp)))
+(define (AddExp? exp) (and (list? exp) (eq? (car exp) 'AddExp)))
+(define (DiffExp? exp) (and (list? exp) (eq? (car exp) 'DiffExp)))
+(define (MultExp? exp) (and (list? exp) (eq? (car exp) 'MultExp)))
+(define (DivExp? exp) (and (list? exp) (eq? (car exp) 'DivExp)))
+
+(define (eval-exp-dt exp)
+  (match exp
+    [(list 'ConstExp n) n]
+    [(list 'AddExp e1 e2) (+ (eval-exp-dt e1) (eval-exp-dt e2))]
+    [(list 'DiffExp e1 e2) (- (eval-exp-dt e1) (eval-exp-dt e2))]
+    [(list 'MultExp e1 e2) (* (eval-exp-dt e1) (eval-exp-dt e2))]
+    [(list 'DivExp e1 e2) (/ (eval-exp-dt e1) (eval-exp-dt e2))]))
+
+;; Pruebas
+
+;; Ejemplo 1dt: Suma simple usando datatypes (10 + 2)
+;; Equivale a: + 10 2
+(define ejemplo1dt (make-AddExp (make-ConstExp 10) (make-ConstExp 2)))
+(define ejemplo2dt (make-MultExp (make-AddExp (make-ConstExp 3) (make-ConstExp 2))
+                                 (make-ConstExp 4)))
+(define ejemplo3dt (make-DivExp (make-AddExp (make-ConstExp 3) (make-ConstExp 2))
+                                (make-DivExp (make-ConstExp 4)
+                                             (make-DiffExp (make-ConstExp 12)
+                                                           (make-ConstExp 8)))))
+(define ejemplo4dt (make-DiffExp (make-AddExp (make-MultExp (make-ConstExp 15) (make-ConstExp 5)) (make-ConstExp 10))
+                                 (make-DiffExp (make-MultExp (make-ConstExp 8) (make-ConstExp 10)) (make-ConstExp 12))))
+
+(if (AddExp? ejemplo1dt) "true" "false")
+(if (MultExp? ejemplo2dt) "true" "false")
+(if (DivExp? ejemplo3dt) "true" "false")
+(if (DiffExp? ejemplo4dt) "true" "false")
+(eval-exp-dt ejemplo4dt) ; preuba para ver el resultado ; 17 
+
+
+
