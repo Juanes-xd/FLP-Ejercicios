@@ -1,4 +1,14 @@
+#| 
+Taller 1
+Juan David Olaya - 2410206 - 3743
+Juan Esteban Ortiz - 2410227 - 3743
+Jean Pierre Cardenas - 2510003 - 3743
+|#
+
+
 #lang eopl
+
+;Ejercicios 2.2
 
 (define-datatype Exp Exp?
   (const-exp (n number?))
@@ -11,6 +21,8 @@
 (define-datatype PrefixList PrefixList?
   (prefix-list (exp Exp?)))
 
+
+;; ====== PARSE ======
 (define (parse-binop lst make-exp)
   (let* ([res1 (parse-exp (cdr lst))]
          [e1   (car res1)]
@@ -38,6 +50,7 @@
         (prefix-list ast)
         (eopl:error 'PARSEBNF "Error" rest))))
 
+;Ejercicio 2.2
 ;; ====== UNPARSE ======
 (define (unparse-exp exp)
   (cases Exp exp
