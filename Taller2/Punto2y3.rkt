@@ -10,6 +10,18 @@ Jean Pierre Cardenas - 2510003 - 3743
 
 ;Ejercicios 2.2
 
+
+#|
+Exp
+Proposito:
+Define el tipo de dato para representar expresiones aritméticas en notación polaca como árbol de sintaxis abstracta.
+<Exp> := (const-exp n)
+      |  (add-exp Exp Exp)
+      |  (diff-exp Exp Exp)
+      |  (mult-exp Exp Exp)
+      |  (div-exp Exp Exp)
+<n> := número
+|#
 (define-datatype Exp Exp?
   (const-exp (n number?))
   (add-exp   (e1 Exp?) (e2 Exp?))
@@ -18,6 +30,13 @@ Jean Pierre Cardenas - 2510003 - 3743
   (div-exp   (e1 Exp?) (e2 Exp?)))
 
 
+
+#|
+PrefixList
+Proposito:
+Define el tipo de dato para envolver la expresión raíz del árbol de sintaxis abstracta de una expresión polaca.
+<PrefixList> := (prefix-list Exp)
+|#
 (define-datatype PrefixList PrefixList?
   (prefix-list (exp Exp?)))
 
