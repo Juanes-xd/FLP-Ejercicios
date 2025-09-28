@@ -96,6 +96,11 @@ lst -> prefix-list: procedimiento que recibe una lista en notación polaca y ret
   (prefix-list ast)
   (eopl:error 'PARSEBNF "Error" rest))))
 
+;Ejemplos
+ (PARSEBNF '(∗ + 3 2 / 4 − 12 8))
+
+ (PARSEBNF '(+ 4 3 * 2 5))
+
 ;Ejercicio 2.2
 ;; ====== UNPARSE ======
 
@@ -125,6 +130,12 @@ tree -> lista: procedimiento que recibe un árbol de tipo prefix-list y retorna 
 (define (UNPARSEBNF tree)
   (cases PrefixList tree
     (prefix-list (exp) (unparse-exp exp))))
+
+;Ejemplos
+ (UNPARSEBNF (PARSEBNF '(+ 4 3 * 2 5)))
+ ;'(+ 4 3 * 2 5)
+ (UNPARSEBNF (PARSEBNF '(/ 10 (- 8 2))))
+ ;'(/ 10 (- 8 2))
 
 ;; ====== EVALUATE-EXP ======
 
@@ -170,3 +181,8 @@ exp -> num: procedimiento que evalúa un nodo del árbol de sintaxis abstracta (
     (diff-exp (e1 e2) (- (evaluate-exp-node e1) (evaluate-exp-node e2)))
     (mult-exp (e1 e2) (* (evaluate-exp-node e1) (evaluate-exp-node e2)))
     (div-exp (e1 e2) (/ (evaluate-exp-node e1) (evaluate-exp-node e2)))))
+
+;Ejemplos
+(evaluate-exp '(+ 4 3 * 2 5))
+(evaluate-exp (PARSEBNF '(+ 4 3 * 2 5)))
+
