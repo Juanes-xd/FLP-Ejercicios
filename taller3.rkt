@@ -924,7 +924,7 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
 ;; <expresion> := <texto-lit>
 
 ; declarar (
-;    @integrantes = procedimiento () haga "Santiago-Deiby-Valentina" finProc;
+;    @integrantes = procedimiento () haga "Juan-Juanes-y-Jean" finProc;
 ;    @saludar = procedimiento (@funcion) haga ("Hola:" concat evaluar @funcion () finEval) finProc
 ;   ) {
 ;      declarar (@decorate = procedimiento () haga evaluar @saludar (@integrantes) finEval finProc
@@ -972,7 +972,7 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
 ;; <expresion> := <texto-lit>
 
 ; declarar (
-;    @integrantes = procedimiento () haga "Santiago-Deiby-Valentina" finProc;
+;    @integrantes = procedimiento () haga "Juan-Juanes-y-Jean" finProc;
 ;    @saludar = procedimiento (@funcion) haga ("Hola:" concat evaluar @funcion () finEval) finProc
 ;  ) {
 ;      declarar (@decorate = procedimiento (@var) haga (evaluar @saludar (@integrantes) finEval concat @var) finProc){
@@ -980,7 +980,7 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
 
 
 ; declarar (
-;     @integrantes = procedimiento () haga "Santiago-Deiby-Valentina" finProc;
+;     @integrantes = procedimiento () haga "Juan-Juanes-y-Jean" finProc;
 ;     @saludar = procedimiento (@funcion) haga ("Hola:" concat evaluar @funcion () finEval) finProc
 ;   ) {
 ;      declarar (@decorate = procedimiento (@var) haga (evaluar @saludar (@integrantes) finEval concat @var) finProc){
