@@ -114,10 +114,18 @@ exp -> lista: procedimiento que recibe un árbol de sintaxis abstracta (Exp) y r
 (define (unparse-exp exp)
   (cases Exp exp
     (const-exp (n) (list n))
-    (add-exp (e1 e2)  (cons '+ (append (unparse-exp e1) (unparse-exp e2))))
-    (diff-exp (e1 e2) (cons '- (append (unparse-exp e1) (unparse-exp e2))))
-    (mult-exp (e1 e2) (cons '* (append (unparse-exp e1) (unparse-exp e2))))
-    (div-exp (e1 e2)  (cons '/ (append (unparse-exp e1) (unparse-exp e2))))))
+    (add-exp (e1 e2)  (cons '+ (unparse-exp-2 e1 e2)))
+    (diff-exp (e1 e2) (cons '- (unparse-exp-2 e1 e2)))
+    (mult-exp (e1 e2) (cons '* (unparse-exp-2 e1 e2)))
+    (div-exp (e1 e2)  (cons '/ (unparse-exp-2 e1 e2)))))
+
+; Función auxiliar para concatenar dos listas sin usar append
+(define (unparse-exp-2 e1 e2)
+  (let ([l1 (unparse-exp e1)]
+        [l2 (unparse-exp e2)])
+    (if (null? l1)
+        l2
+        (cons (car l1) (unparse-exp-2 (cdr l1) e2)))))
 
 
 #|
