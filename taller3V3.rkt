@@ -422,18 +422,18 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
 ;Punto e)
 
 ; Se definen tres procedimientos: @integrantes, @saludar y @decorate. El procedimiento
-; @integrantes retorna una cadena de texto con los nombres "Kevin-Miguel-Néstor".
+; @integrantes retorna una cadena de texto con los nombres "Juan-Juanes-Jean".
 ; El procedimiento @saludar espera un parámetro n para retornar la cadena de texto "Hola:" concatenado
 ; con el parámetro n. El procedimiento @decorate evalúa el procedimiento @saludar con el parámetro
-; @integrantes. Se espera que la salida sea: "Hola:Kevin-Miguel-y-Néstor".
+; @integrantes. Se espera que la salida sea: "Hola:Juan-Juanes-y-Jean".
 
 ; -->recursiva
-;     @integrantes() = "Kevin-Miguel-y-Néstor"
+;     @integrantes() = "Juan-Juanes-y-Jean"
 ;     @saludar(@n) = ("Hola:" concat evaluar @n() finEval) 
 ;     @decorate() = evaluar @saludar(@integrantes) finEval
 ;     {evaluar @decorate() finEval}
 ;
-; > "Hola:Kevin-Miguel-y-Néstor"
+; > "Hola:Juan-Juanes-y-Jean"
 
 
 
