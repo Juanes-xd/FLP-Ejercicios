@@ -632,6 +632,243 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
                 #f))))))
 
 
+;****************************************************************************************
+;CASOS DE PRUEBA PARA LOS PUNTOS DEL TALLER
+;****************************************************************************************
+
+#|
+===================================================================================
+PUNTO A (10 pts): Área de círculo con valores flotantes
+===================================================================================
+Fórmula: A = PI * r * r
+Usar PI = 3.1416
+
+Caso de prueba:
+--> declarar (
+      @radio=2.5;
+      @areaCirculo=procedimiento (@r) haga (((3.1416*@r)*@r)) finProc
+    ) {
+      evaluar @areaCirculo(@radio) finEval
+    }
+
+Resultado esperado: 19.635 (aproximadamente)
+
+
+Prueba adicional con radio 5:
+--> declarar (
+      @radio=5;
+      @areaCirculo=procedimiento (@r) haga (((3.1416*@r)*@r)) finProc
+    ) {
+      evaluar @areaCirculo(@radio) finEval
+    }
+
+Resultado esperado: 78.54
+
+
+===================================================================================
+PUNTO B (5 pts): Factorial recursivo
+===================================================================================
+Factorial(n) = n * Factorial(n-1), con caso base Factorial(0) = 1
+
+Caso de prueba - Factorial de 5:
+--> recursiva
+      @factorial(@n)=
+        Si @n entonces (@n * evaluar @factorial((@n~1)) finEval) sino 1 finSI
+    {
+      evaluar @factorial(5) finEval
+    }
+
+Resultado esperado: 120
+
+
+Caso de prueba - Factorial de 10:
+--> recursiva
+      @factorial(@n)=
+        Si @n entonces (@n * evaluar @factorial((@n~1)) finEval) sino 1 finSI
+    {
+      evaluar @factorial(10) finEval
+    }
+
+Resultado esperado: 3628800
+
+
+===================================================================================
+PUNTO C (10 pts): Suma recursiva usando add1 y sub1
+===================================================================================
+Sumar(a, b) = si b es 0, retorna a, sino Sumar(add1(a), sub1(b))
+
+Caso de prueba:
+--> recursiva
+      @sumar(@x,@y)=
+        Si @y entonces evaluar @sumar(add1(@x),sub1(@y)) finEval sino @x finSI
+    {
+      evaluar @sumar(4,5) finEval
+    }
+
+Resultado esperado: 9
+
+
+Prueba adicional:
+--> recursiva
+      @sumar(@x,@y)=
+        Si @y entonces evaluar @sumar(add1(@x),sub1(@y)) finEval sino @x finSI
+    {
+      evaluar @sumar(10,25) finEval
+    }
+
+Resultado esperado: 35
+
+
+===================================================================================
+PUNTO D (15 pts): Restar y multiplicar usando solo add1 y sub1
+===================================================================================
+
+RESTA: Restar(a, b) = si b es 0, retorna a, sino Restar(sub1(a), sub1(b))
+
+Caso de prueba - Resta:
+--> recursiva
+      @restar(@x,@y)=
+        Si @y entonces evaluar @restar(sub1(@x),sub1(@y)) finEval sino @x finSI
+    {
+      evaluar @restar(10,3) finEval
+    }
+
+Resultado esperado: 7
+
+
+MULTIPLICACIÓN: Multiplicar(a, b) = si b es 0, retorna 0, sino a + Multiplicar(a, sub1(b))
+
+Caso de prueba - Multiplicación:
+--> recursiva
+      @multiplicar(@x,@y)=
+        Si @y entonces (@x + evaluar @multiplicar(@x,sub1(@y)) finEval) sino 0 finSI
+    {
+      evaluar @multiplicar(10,3) finEval
+    }
+
+Resultado esperado: 30
+
+
+Pruebas combinadas (resta y multiplicación juntas):
+--> recursiva
+      @restar(@x,@y)=
+        Si @y entonces evaluar @restar(sub1(@x),sub1(@y)) finEval sino @x finSI
+      @multiplicar(@x,@y)=
+        Si @y entonces (@x + evaluar @multiplicar(@x,sub1(@y)) finEval) sino 0 finSI
+    {
+      (evaluar @restar(10,3) finEval + evaluar @multiplicar(10,3) finEval)
+    }
+
+Resultado esperado: 37 (7 + 30)
+
+
+===================================================================================
+PUNTO E (25 pts): Decorador simple - Saludo a integrantes
+===================================================================================
+El decorador @saludar recibe una función y retorna otra función que agrega "Hola:"
+
+Caso de prueba:
+--> declarar (
+      @integrantes=procedimiento () haga "Juan-David-Jean" finProc;
+      @saludar=procedimiento (@f) haga 
+        procedimiento () haga 
+          ("Hola:" concat evaluar @f() finEval) 
+        finProc 
+      finProc
+    ) {
+      declarar (
+        @decorate=evaluar @saludar(@integrantes) finEval
+      ) {
+        evaluar @decorate() finEval
+      }
+    }
+
+Resultado esperado: "Hola:Juan-David-Jean"
+
+
+Prueba con otros nombres:
+--> declarar (
+      @integrantes=procedimiento () haga "Robinson-y-Sara" finProc;
+      @saludar=procedimiento (@f) haga 
+        procedimiento () haga 
+          ("Hola:" concat evaluar @f() finEval) 
+        finProc 
+      finProc
+    ) {
+      declarar (
+        @decorate=evaluar @saludar(@integrantes) finEval
+      ) {
+        evaluar @decorate() finEval
+      }
+    }
+
+Resultado esperado: "Hola:Robinson-y-Sara"
+
+
+===================================================================================
+PUNTO F (35 pts): Decorador con parámetro adicional
+===================================================================================
+El decorador recibe un mensaje adicional que se agrega al final
+
+Caso de prueba:
+--> declarar (
+      @integrantes=procedimiento () haga "Juan-David-Jean" finProc;
+      @saludar=procedimiento (@f) haga 
+        procedimiento (@msg) haga 
+          (("Hola:" concat evaluar @f() finEval) concat @msg) 
+        finProc 
+      finProc
+    ) {
+      declarar (
+        @decorate=evaluar @saludar(@integrantes) finEval
+      ) {
+        evaluar @decorate("-ProfesoresFLP") finEval
+      }
+    }
+
+Resultado esperado: "Hola:Juan-David-Jean-ProfesoresFLP"
+
+
+Prueba con mensaje diferente:
+--> declarar (
+      @integrantes=procedimiento () haga "Robinson-y-Sara" finProc;
+      @saludar=procedimiento (@f) haga 
+        procedimiento (@msg) haga 
+          (("Hola:" concat evaluar @f() finEval) concat @msg) 
+        finProc 
+      finProc
+    ) {
+      declarar (
+        @decorate=evaluar @saludar(@integrantes) finEval
+      ) {
+        evaluar @decorate("-EOPL-2025") finEval
+      }
+    }
+
+Resultado esperado: "Hola:Robinson-y-Sara-EOPL-2025"
+
+
+Prueba con despedida:
+--> declarar (
+      @integrantes=procedimiento () haga "Juan-David-Jean" finProc;
+      @saludar=procedimiento (@f) haga 
+        procedimiento (@msg) haga 
+          (("Hola:" concat evaluar @f() finEval) concat @msg) 
+        finProc 
+      finProc
+    ) {
+      declarar (
+        @decorate=evaluar @saludar(@integrantes) finEval
+      ) {
+        evaluar @decorate("-Bienvenidos") finEval
+      }
+    }
+
+Resultado esperado: "Hola:Juan-David-Jean-Bienvenidos"
+
+===================================================================================
+|#
+
 (interpretador)
 
 
