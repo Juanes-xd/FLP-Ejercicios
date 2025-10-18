@@ -302,9 +302,9 @@ a) 10pts. Escriba un programa en su lenguaje de programación que contenga un pr
 
 
 
-b) 5pts. Escriba un programa en su lenguaje de programación que contenga un procedimiento que permita calcular el factorial de un número n. Como la gramática para funciones recursivas debe ser propuesta por el grupo, incluya dos ejemplos de uso para el factorial de 5 y el factorial de 10.
+b) 5pts. Escriba un programa en su lenguaje de programación que contenga un procedimiento que permita calcular el factorial de un número n. Como la gramática para funciones recursivos debe ser propuesta por el grupo, incluya dos ejemplos de uso para el factorial de 5 y el factorial de 10.
 
-c) 10pts. Escriba un programa en su lenguaje de programación que contenga un procedimiento que permita calcular una suma de forma recursiva. Debe hacer uso de las funciones add1 y sub1 (remitase a la clase donde se implementó la interfaz con las funciones zero, isZero?, sucessor, predecessor). Si no se evidencia el uso de add1 y sub1, el ejercicio no será valido. Incluya un llamado a la función recursiva: "evaluar @sumar (4, 5) finEval "
+c) 10pts. Escriba un programa en su lenguaje de programación que contenga un procedimiento que permita calcular una suma de forma recursivo. Debe hacer uso de las funciones add1 y sub1 (remitase a la clase donde se implementó la interfaz con las funciones zero, isZero?, sucessor, predecessor). Si no se evidencia el uso de add1 y sub1, el ejercicio no será valido. Incluya un llamado a la función recursivo: "evaluar @sumar (4, 5) finEval "
 
 d) 15pts. Escriba un programa en su lenguaje de programación que permita restar y multiplicar dos números haciendo uso solamente de las primitivas add1 y sub1. Incluya llamados:  "evaluar @restar (10, 3) finEval  ",  "evaluar @multiplicar (10, 3) finEval  ".
 
@@ -385,8 +385,8 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
     (expresion ("evaluar" expresion "(" (separated-list expresion ",") ")" "finEval") app-exp)
     
     ;Recursividad
-     (expresion ("recursiva" (arbno identificador "(" (separated-list identificador ",") ")" "=" expresion)  "{" expresion "}") 
-                recursiva-exp)
+     (expresion ("recursivo" (arbno identificador "(" (separated-list identificador ",") ")" "=" expresion)  "{" expresion "}") 
+                recursivo-exp)
      
     ;Primitivas-binarias
     (primitiva-binaria ("+") primitiva-suma)
@@ -493,8 +493,8 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
                      (apply-procedure proc args)
                      (eopl:error 'eval-expresion
                                  "Intento de aplicar un no-procedimiento ~s" proc))))
-      (recursiva-exp (proc-names idss bodies recursiva-body)
-                  (eval-expresion recursiva-body
+      (recursivo-exp (proc-names idss bodies recursivo-body)
+                  (eval-expresion recursivo-body
                                    (extend-env-recursively proc-names idss bodies env)))))
   )
 
@@ -566,7 +566,7 @@ evaluar @decorate ("-ProfesoresFLP") finEval  //Deberá retornar "Hola:Robinson-
   (lambda (syms vals env)
     (extended-env-record syms vals env)))
 
-;función que extiende recursivamente el ambiente vinculando nombres de procedimientos, listas de argumentos y cuerpos.
+;función que extiende recursivomente el ambiente vinculando nombres de procedimientos, listas de argumentos y cuerpos.
 (define extend-env-recursively
   (lambda (proc-names idss bodies old-env)
     (recursively-extended-env-record
@@ -644,25 +644,17 @@ Fórmula: A = PI * r * r
 Usar PI = 3.1416
 
 Caso de prueba:
---> declarar (
-      @radio=2.5;
-      @areaCirculo=procedimiento (@r) haga (((3.1416*@r)*@r)) finProc
-    ) {
-      evaluar @areaCirculo(@radio) finEval
-    }
+ -->  declarar ( @radio=5;
+      @areaCirculo= procedimiento (@radio) haga (3.141592 *(@radio * @radio))
+      finProc ) { evaluar @areaCirculo(@radio) finEval }
 
-Resultado esperado: 19.635 (aproximadamente)
+  78.5398
 
+ --> declarar( @radio=3.7;
+          @areaCirculo = procedimiento (@radio) haga (3.141592 * (@radio * @radio))
+          finProc ) { evaluar @areaCirculo(@radio) finEval }
 
-Prueba adicional con radio 5:
---> declarar (
-      @radio=5;
-      @areaCirculo=procedimiento (@r) haga (((3.1416*@r)*@r)) finProc
-    ) {
-      evaluar @areaCirculo(@radio) finEval
-    }
-
-Resultado esperado: 78.54
+  43.00839448000001
 
 
 ===================================================================================
@@ -671,7 +663,7 @@ PUNTO B (5 pts): Factorial recursivo
 Factorial(n) = n * Factorial(n-1), con caso base Factorial(0) = 1
 
 Caso de prueba - Factorial de 5:
---> recursiva
+--> recursivo
       @factorial(@n)=
         Si @n entonces (@n * evaluar @factorial((@n~1)) finEval) sino 1 finSI
     {
@@ -682,7 +674,7 @@ Resultado esperado: 120
 
 
 Caso de prueba - Factorial de 10:
---> recursiva
+--> recursivo
       @factorial(@n)=
         Si @n entonces (@n * evaluar @factorial((@n~1)) finEval) sino 1 finSI
     {
@@ -693,12 +685,12 @@ Resultado esperado: 3628800
 
 
 ===================================================================================
-PUNTO C (10 pts): Suma recursiva usando add1 y sub1
+PUNTO C (10 pts): Suma recursivo usando add1 y sub1
 ===================================================================================
 Sumar(a, b) = si b es 0, retorna a, sino Sumar(add1(a), sub1(b))
 
 Caso de prueba:
---> recursiva
+--> recursivo
       @sumar(@x,@y)=
         Si @y entonces evaluar @sumar(add1(@x),sub1(@y)) finEval sino @x finSI
     {
@@ -709,7 +701,7 @@ Resultado esperado: 9
 
 
 Prueba adicional:
---> recursiva
+--> recursivo
       @sumar(@x,@y)=
         Si @y entonces evaluar @sumar(add1(@x),sub1(@y)) finEval sino @x finSI
     {
@@ -726,7 +718,7 @@ PUNTO D (15 pts): Restar y multiplicar usando solo add1 y sub1
 RESTA: Restar(a, b) = si b es 0, retorna a, sino Restar(sub1(a), sub1(b))
 
 Caso de prueba - Resta:
---> recursiva
+--> recursivo
       @restar(@x,@y)=
         Si @y entonces evaluar @restar(sub1(@x),sub1(@y)) finEval sino @x finSI
     {
@@ -739,7 +731,7 @@ Resultado esperado: 7
 MULTIPLICACIÓN: Multiplicar(a, b) = si b es 0, retorna 0, sino a + Multiplicar(a, sub1(b))
 
 Caso de prueba - Multiplicación:
---> recursiva
+--> recursivo
       @multiplicar(@x,@y)=
         Si @y entonces (@x + evaluar @multiplicar(@x,sub1(@y)) finEval) sino 0 finSI
     {
@@ -750,7 +742,7 @@ Resultado esperado: 30
 
 
 Pruebas combinadas (resta y multiplicación juntas):
---> recursiva
+--> recursivo
       @restar(@x,@y)=
         Si @y entonces evaluar @restar(sub1(@x),sub1(@y)) finEval sino @x finSI
       @multiplicar(@x,@y)=
