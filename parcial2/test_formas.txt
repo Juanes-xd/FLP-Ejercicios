@@ -1,0 +1,85 @@
+let
+    Forma = proc(x_inicial y_inicial)
+              let
+                Ubicacion_x = x_inicial
+                Ubicacion_y = y_inicial
+              in
+                proc(mensaje)
+                  if -(mensaje, 1)
+                  then
+                    if -(mensaje, 2)
+                    then
+                      if -(mensaje, 3)
+                      then
+                        proc(nuevoValor)
+                          begin
+                            set Ubicacion_y = nuevoValor;
+                            Ubicacion_y
+                          end
+                      else
+                        Ubicacion_y
+                    else
+                      proc(nuevoValor)
+                        begin
+                          set Ubicacion_x = nuevoValor;
+                          Ubicacion_x
+                        end
+                  else
+                    Ubicacion_x
+    Circulo = proc(rad x_inicial y_inicial)
+                let
+                  super = (Forma x_inicial y_inicial)
+                  radio = rad
+                in
+                  proc(mensaje)
+                    if -(mensaje, 5)
+                    then
+                      if -(mensaje, 6)
+                      then
+                        radio
+                      else
+                        proc(nuevoValor)
+                          begin
+                            set radio = nuevoValor;
+                            radio
+                          end
+                    else
+                      (super mensaje)
+    Rectangulo = proc(base altura x_inicial y_inicial)
+                   let
+                     super = (Forma x_inicial y_inicial)
+                     lado1 = base
+                     lado2 = altura
+                   in
+                     proc(mensaje)
+                       if -(mensaje, 5)
+                       then
+                         if -(mensaje, 6)
+                         then
+                           if -(mensaje, 7)
+                           then
+                             if -(mensaje, 8)
+                             then
+                               lado2
+                             else
+                               proc(nuevoValor)
+                                 begin
+                                   set lado2 = nuevoValor;
+                                   lado2
+                                 end
+                           else
+                             lado1
+                         else
+                           proc(nuevoValor)
+                             begin
+                               set lado1 = nuevoValor;
+                               lado1
+                             end
+                       else
+                         (super mensaje)
+  in
+    let
+      circulo = (Circulo 50 10 20)
+      rectangulo = (Rectangulo 30 40 5 15)
+    in
+      +(((circulo 5)), ((rectangulo 5)))

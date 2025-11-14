@@ -1,0 +1,193 @@
+#|
+================================================================================
+EJEMPLOS DE USO: SISTEMA DE FORMAS GEOMÉTRICAS (OOP)
+================================================================================
+
+Este archivo contiene ejemplos de cómo usar el sistema de clases para 
+crear y manipular Círculos y Rectángulos, como se especifica en la imagen.
+
+================================================================================
+ESTRUCTURA DE CLASES:
+================================================================================
+
+Forma (clase base)
+├─ ubicacion_x: posición en eje X
+├─ ubicacion_y: posición en eje Y
+├─ método get-x(): retorna ubicacion_x
+├─ método get-y(): retorna ubicacion_y
+└─ método set-x(nuevo): actualiza ubicacion_x
+    método set-y(nuevo): actualiza ubicacion_y
+
+Rectángulo (hereda de Forma)
+├─ lado1: primer lado del rectángulo
+├─ lado2: segundo lado del rectángulo
+├─ método get-lado1(): retorna lado1
+├─ método get-lado2(): retorna lado2
+├─ método area(): calcula lado1 * lado2
+└─ método perimetro(): calcula 2 * (lado1 + lado2)
+
+Círculo (hereda de Forma)
+├─ radio: radio del círculo
+├─ método get-radio(): retorna radio
+├─ método area(): calcula π * r²
+└─ método perimetro(): calcula 2 * π * r
+
+================================================================================
+EJEMPLOS DE PRUEBA
+================================================================================
+
+EJEMPLO 1: Crear un Círculo con radio 45, ubicado en (3, 4)
+============================================================
+
+Entrada:
+let
+  circulo = new Circulo(3, 4, 45)
+in
+  send circulo area()
+
+Resultado esperado: 6361.725 (≈ 3.1416 * 45 * 45)
+
+Valor de los atributos:
+- ubicacion_x = 3
+- ubicacion_y = 4
+- radio = 45
+
+Métodos disponibles:
+- send circulo get-x() → 3
+- send circulo get-y() → 4
+- send circulo get-radio() → 45
+- send circulo area() → 6361.725
+- send circulo perimetro() → 282.744 (≈ 2 * 3.1416 * 45)
+
+---
+
+EJEMPLO 2: Crear un Rectángulo con lados 20 y 30, ubicado en (-9, 6)
+=====================================================================
+
+Entrada:
+let
+  rectangulo = new Rectangulo(-9, 6, 20, 30)
+in
+  send rectangulo area()
+
+Resultado esperado: 600 (20 * 30)
+
+Valor de los atributos:
+- ubicacion_x = -9
+- ubicacion_y = 6
+- lado1 = 20
+- lado2 = 30
+
+Métodos disponibles:
+- send rectangulo get-x() → -9
+- send rectangulo get-y() → 6
+- send rectangulo get-lado1() → 20
+- send rectangulo get-lado2() → 30
+- send rectangulo area() → 600
+- send rectangulo perimetro() → 100 (2 * (20 + 30))
+
+---
+
+EJEMPLO 3: Crear Lista con 2 Objetos (Círculo y Rectángulo)
+============================================================
+
+Según la especificación, debemos:
+1. Crear un Círculo con radio 45 en (3, 4)
+2. Crear un Rectángulo con lados 20, 30 en (-9, 6)
+3. Retornar lista con sus atributos
+
+Entrada:
+let
+  circulo = new Circulo(3, 4, 45)
+  rectangulo = new Rectangulo(-9, 6, 20, 30)
+  lista-circulo = list(send circulo get-x(), 
+                       send circulo get-y(), 
+                       send circulo get-radio())
+  lista-rectangulo = list(send rectangulo get-x(),
+                          send rectangulo get-y(),
+                          send rectangulo get-lado1(),
+                          send rectangulo get-lado2())
+in
+  list(lista-circulo, lista-rectangulo)
+
+Resultado esperado: ((3 4 45) (-9 6 20 30))
+
+Explicación:
+- Primera lista: (3 4 45) → ubicación X, ubicación Y, radio del círculo
+- Segunda lista: (-9 6 20 30) → ubicación X, ubicación Y, lado1, lado2 del rectángulo
+
+---
+
+EJEMPLO 4: Operaciones con Areas y Perímetros
+==============================================
+
+Entrada:
+let
+  c = new Circulo(0, 0, 5)
+  r = new Rectangulo(0, 0, 10, 15)
+in
+  list(send c area(), send c perimetro(), send r area(), send r perimetro())
+
+Resultado esperado: (78.54 31.416 150 50)
+
+- Área círculo: 3.1416 * 5² ≈ 78.54
+- Perímetro círculo: 2 * 3.1416 * 5 ≈ 31.416
+- Área rectángulo: 10 * 15 = 150
+- Perímetro rectángulo: 2 * (10 + 15) = 50
+
+---
+
+EJEMPLO 5: Cambiar Ubicación de un Objeto
+==========================================
+
+Entrada:
+let
+  circulo = new Circulo(3, 4, 45)
+in
+  begin
+    send circulo set-x(10);
+    send circulo set-y(20);
+    list(send circulo get-x(), send circulo get-y())
+  end
+
+Resultado esperado: (10 20)
+
+Explicación:
+- Inicialmente: ubicacion_x = 3, ubicacion_y = 4
+- Después de set-x(10): ubicacion_x = 10
+- Después de set-y(20): ubicacion_y = 20
+- Retorna: (10 20)
+
+================================================================================
+FORMATO PARA LA ENTREGA (SEGÚN ESPECIFICACIÓN)
+================================================================================
+
+Se debe retornar una lista que contenga dos elementos:
+
+1. En la primera posición: Lista con todos los valores de los atributos del Círculo
+   Formato: (ubicacion_x ubicacion_y radio)
+   Ejemplo: (3 4 45)
+
+2. En la segunda posición: Lista con todos los valores de los atributos del Rectángulo
+   Formato: (ubicacion_x ubicacion_y lado1 lado2)
+   Ejemplo: (-9 6 20 30)
+
+PROGRAMA FINAL A ENTREGAR:
+
+let
+  circulo = new Circulo(3, 4, 45)
+  rectangulo = new Rectangulo(-9, 6, 20, 30)
+  lista-circulo = list(send circulo get-x(), 
+                       send circulo get-y(), 
+                       send circulo get-radio())
+  lista-rectangulo = list(send rectangulo get-x(),
+                          send rectangulo get-y(),
+                          send rectangulo get-lado1(),
+                          send rectangulo get-lado2())
+in
+  list(lista-circulo, lista-rectangulo)
+
+RESULTADO ESPERADO: ((3 4 45) (-9 6 20 30))
+
+================================================================================
+|#

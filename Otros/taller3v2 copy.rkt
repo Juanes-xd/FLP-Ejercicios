@@ -859,6 +859,11 @@ Prueba con despedida:
 Resultado esperado: "Hola:Juan-David-Jean-Bienvenidos"
 
 ===================================================================================
+
+559-562
+573-579
+
+
 |#
 
 (interpretador)

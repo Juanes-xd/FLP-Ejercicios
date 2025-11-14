@@ -1,11 +1,12 @@
 #lang eopl
+
 ;******************************************************************************************
-;;;;; Interpretador para lenguaje con condicionales, ligadura local, procedimientos y 
-;;;;; procedimientos recursivos
+;;;;; Interpretador para lenguaje con condicionales, ligadura local, procedimientos,
+;;;;; procedimientos recursivos, ejecución secuencial y asignación de variables
 
 ;; La definición BNF para las expresiones del lenguaje:
 ;;
-;;  <program>       ::= <expression>   
+;;  <program>       ::= <expression>
 ;;                      <a-program (exp)>
 ;;  <expression>    ::= <number>
 ;;                      <lit-exp (datum)>
@@ -15,14 +16,18 @@
 ;;                      <primapp-exp (prim rands)>
 ;;                  ::= if <expresion> then <expresion> else <expression>
 ;;                      <if-exp (exp1 exp2 exp23)>
-;;                  ::= let {identifier = <expression>}* in <expression>
+;;                  ::= let {<identifier> = <expression>}* in <expression>
 ;;                      <let-exp (ids rands body)>
 ;;                  ::= proc({<identificador>}*(,)) <expression>
 ;;                      <proc-exp (ids body)>
 ;;                  ::= (<expression> {<expression>}*)
 ;;                      <app-exp proc rands>
 ;;                  ::= letrec  {identifier ({identifier}*(,)) = <expression>}* in <expression>
-;;                     <letrec-exp proc-names idss bodies bodyletrec>
+;;                     <letrec-exp(proc-names idss bodies bodyletrec)>
+;;                  ::= begin <expression> {; <expression>}* end
+;;                     <begin-exp (exp exps)>
+;;                  ::= set <identifier> = <expression>
+;;                     <set-exp (id rhsexp)>
 ;;  <primitive>     ::= + | - | * | add1 | sub1 
 
 ;******************************************************************************************
@@ -34,27 +39,19 @@
 '((white-sp
    (whitespace) skip)
   (comment
-   ("%" (arbno (not #\newline))) skip)  
+   ("%" (arbno (not #\newline))) skip)
   (identifier
    (letter (arbno (or letter digit "?"))) symbol)
   (number
    (digit (arbno digit)) number)
   (number
-   ("-" digit (arbno digit)) number)
-  (imaginary-number
-   (digit (arbno digit) "i") symbol)
-  (imaginary-number
-   ("-" digit (arbno digit) "i") symbol)
-  (string
-   ("\"" (arbno (not #\")) "\"") string)))
+   ("-" digit (arbno digit)) number)))
 
 ;Especificación Sintáctica (gramática)
 
 (define grammar-simple-interpreter
   '((program (expression) a-program)
     (expression (number) lit-exp)
-    (expression (imaginary-number) imag-exp)
-    (expression (string) string-exp)
     (expression (identifier) var-exp)
     (expression
      (primitive "(" (separated-list expression ",")")")
@@ -67,26 +64,21 @@
                 proc-exp)
     (expression ( "(" expression (arbno expression) ")")
                 app-exp)
-    
-    ; características adicionales
     (expression ("letrec" (arbno identifier "(" (separated-list identifier ",") ")" "=" expression)  "in" expression) 
                 letrec-exp)
-    (expression ("switch" "(" expression ")" "{" 
-                (arbno "case" expression ":" "{" expression "}")
-                "default" ":" "{" expression "}"
-                "}") switch-exp)
+    
+    ; características adicionales
+    (expression ("begin" expression (arbno ";" expression) "end")
+                begin-exp)
+    (expression ("set" identifier "=" expression)
+                set-exp)
     ;;;;;;
 
     (primitive ("+") add-prim)
     (primitive ("-") substract-prim)
     (primitive ("*") mult-prim)
     (primitive ("add1") incr-prim)
-    (primitive ("sub1") decr-prim)
-    (primitive ("complex") complex-prim)
-    (primitive ("sum-complex") sum-complex-prim)
-    (primitive ("sub-complex") sub-complex-prim)
-    (primitive ("mult-complex") mult-complex-prim)
-    (primitive ("div-complex") div-complex-prim)))
+    (primitive ("sub1") decr-prim)))
 
 
 ;Tipos de datos para la sintaxis abstracta de la gramática
@@ -123,8 +115,13 @@
 ;   (proc-names (list-of symbol?))
 ;   (idss (list-of (list-of symbol?)))
 ;   (bodies (list-of expression?))
-;   (body-letrec expression?)))
-
+;   (body-letrec expression?))
+;  (begin-exp
+;   (exp expression?)
+;   (exps (list-of expression?)))
+;  (set-exp
+;   (id symbol?)
+;   (rhs expression?)))
 ;
 ;(define-datatype primitive primitive?
 ;  (add-prim)
@@ -157,11 +154,7 @@
 
 (define interpretador
   (sllgen:make-rep-loop  "--> "
-    (lambda (pgm) 
-      (let ((result (eval-program pgm)))
-        (if (complex-number? result)
-            (display (show-complex result))
-            result))) 
+    (lambda (pgm) (eval-program  pgm)) 
     (sllgen:make-stream-parser 
       scanner-spec-simple-interpreter
       grammar-simple-interpreter)))
@@ -185,13 +178,21 @@
 ;     '(x y z)
 ;     '(4 2 5)
 ;     (empty-env))))
+
 (define init-env
   (lambda ()
     (extend-env
-     '(x y z f)
-     (list 4 2 5 (closure '(y) (primapp-exp (mult-prim) (cons (var-exp 'y) (cons (primapp-exp (decr-prim) (cons (var-exp 'y) '())) '())))
-                      (empty-env)))
+     '(i v x)
+     '(1 5 10)
      (empty-env))))
+
+;(define init-env
+;  (lambda ()
+;    (extend-env
+;     '(x y z f)
+;     (list 4 2 5 (closure '(y) (primapp-exp (mult-prim) (cons (var-exp 'y) (cons (primapp-exp (decr-prim) (cons (var-exp 'y) ())) ())))
+;                      (empty-env)))
+;     (empty-env))))
 
 ;eval-expression: <expression> <enviroment> -> numero
 ; evalua la expresión en el ambiente de entrada
@@ -199,11 +200,6 @@
   (lambda (exp env)
     (cases expression exp
       (lit-exp (datum) datum)
-      (imag-exp (datum) 
-                (let ((num-str (symbol->string datum)))
-                  (let ((num-part (string->number (substring num-str 0 (- (string-length num-str) 1)))))
-                    num-part)))
-      (string-exp (str) str)
       (var-exp (id) (apply-env env id))
       (primapp-exp (prim rands)
                    (let ((args (eval-rands rands env)))
@@ -228,19 +224,20 @@
       (letrec-exp (proc-names idss bodies letrec-body)
                   (eval-expression letrec-body
                                    (extend-env-recursively proc-names idss bodies env)))
-      (switch-exp (switch-expr case-vals case-bodies default-body)
-                  (eval-switch switch-expr case-vals case-bodies default-body env)))))
-
-; Función auxiliar para evaluar switch
-(define eval-switch
-  (lambda (switch-expr case-vals case-bodies default-body env)
-    (let ((switch-val (eval-expression switch-expr env)))
-      (let loop ((vals case-vals) (bodies case-bodies))
-        (cond
-          ((null? vals) (eval-expression default-body env))
-          ((equal? switch-val (eval-expression (car vals) env))
-           (eval-expression (car bodies) env))
-          (else (loop (cdr vals) (cdr bodies))))))))
+      (set-exp (id rhs-exp)
+               (begin
+                 (setref!
+                  (apply-env-ref env id)
+                  (eval-expression rhs-exp env))
+                 1))
+      (begin-exp (exp exps) 
+                 (let loop ((acc (eval-expression exp env))
+                             (exps exps))
+                    (if (null? exps) 
+                        acc
+                        (loop (eval-expression (car exps) 
+                                               env)
+                              (cdr exps))))))))
 
 ; funciones auxiliares para aplicar eval-expression a cada elemento de una 
 ; lista de operandos (expresiones)
@@ -252,7 +249,7 @@
   (lambda (rand env)
     (eval-expression rand env)))
 
-;apply-primitive: <primitiva> <list-of-expression> -> numero o complex-number
+;apply-primitive: <primitiva> <list-of-expression> -> numero
 (define apply-primitive
   (lambda (prim args)
     (cases primitive prim
@@ -260,51 +257,12 @@
       (substract-prim () (- (car args) (cadr args)))
       (mult-prim () (* (car args) (cadr args)))
       (incr-prim () (+ (car args) 1))
-      (decr-prim () (- (car args) 1))
-      (complex-prim () (complex (car args) (cadr args)))
-      (sum-complex-prim () 
-                        (let ((z1 (car args)) (z2 (cadr args)))
-                          (cases complex-number z1
-                            (complex (a b)
-                                     (cases complex-number z2
-                                       (complex (c d)
-                                                (complex (+ a c) (+ b d))))))))
-      (sub-complex-prim () 
-                        (let ((z1 (car args)) (z2 (cadr args)))
-                          (cases complex-number z1
-                            (complex (a b)
-                                     (cases complex-number z2
-                                       (complex (c d)
-                                                (complex (- a c) (- b d))))))))
-      (mult-complex-prim () 
-                         (let ((z1 (car args)) (z2 (cadr args)))
-                           (cases complex-number z1
-                             (complex (a b)
-                                      (cases complex-number z2
-                                        (complex (c d)
-                                                 (complex (- (* a c) (* b d)) 
-                                                         (+ (* a d) (* b c)))))))))
-      (div-complex-prim () 
-                        (let ((z1 (car args)) (z2 (cadr args)))
-                          (cases complex-number z1
-                            (complex (a b)
-                                     (cases complex-number z2
-                                       (complex (c d)
-                                                (let ((denom (+ (* c c) (* d d))))
-                                                  (complex (/ (+ (* a c) (* b d)) denom)
-                                                          (/ (- (* b c) (* a d)) denom))))))))))))
+      (decr-prim () (- (car args) 1)))))
 
 ;true-value?: determina si un valor dado corresponde a un valor booleano falso o verdadero
 (define true-value?
   (lambda (x)
     (not (zero? x))))
-
-;*******************************************************************************************
-;Números Complejos
-(define-datatype complex-number complex-number?
-  (complex
-   (real number?)
-   (imag number?)))
 
 ;*******************************************************************************************
 ;Procedimientos
@@ -327,13 +285,10 @@
 ;definición del tipo de dato ambiente
 (define-datatype environment environment?
   (empty-env-record)
-  (extended-env-record (syms (list-of symbol?))
-                       (vals (list-of scheme-value?))
-                       (env environment?))
-  (recursively-extended-env-record (proc-names (list-of symbol?))
-                                   (idss (list-of (list-of symbol?)))
-                                   (bodies (list-of expression?))
-                                   (env environment?)))
+  (extended-env-record
+   (syms (list-of symbol?))
+   (vec vector?)
+   (env environment?)))
 
 (define scheme-value? (lambda (v) #t))
 
@@ -348,64 +303,94 @@
 ;función que crea un ambiente extendido
 (define extend-env
   (lambda (syms vals env)
-    (extended-env-record syms vals env)))
+    (extended-env-record syms (list->vector vals) env)))
 
 ;extend-env-recursively: <list-of symbols> <list-of <list-of symbols>> <list-of expressions> environment -> environment
 ;función que crea un ambiente extendido para procedimientos recursivos
 (define extend-env-recursively
   (lambda (proc-names idss bodies old-env)
-    (recursively-extended-env-record
-     proc-names idss bodies old-env)))
+    (let ((len (length proc-names)))
+      (let ((vec (make-vector len)))
+        (let ((env (extended-env-record proc-names vec old-env)))
+          (for-each
+            (lambda (pos ids body)
+              (vector-set! vec pos (closure ids body env)))
+            (iota len) idss bodies)
+          env)))))
 
+;iota: number -> list
+;función que retorna una lista de los números desde 0 hasta end
+(define iota
+  (lambda (end)
+    (let loop ((next 0))
+      (if (>= next end) '()
+        (cons next (loop (+ 1 next)))))))
+
+;(define iota
+;  (lambda (end)
+;    (iota-aux 0 end)))
+;
+;(define iota-aux
+;  (lambda (ini fin)
+;    (if (>= ini fin)
+;        ()
+;        (cons ini (iota-aux (+ 1 ini) fin)))))
 
 ;función que busca un símbolo en un ambiente
 (define apply-env
   (lambda (env sym)
+    (deref (apply-env-ref env sym))))
+     ;(apply-env-ref env sym)))
+    ;env))
+(define apply-env-ref
+  (lambda (env sym)
     (cases environment env
       (empty-env-record ()
-                        (eopl:error 'empty-env "No binding for ~s" sym))
-      (extended-env-record (syms vals old-env)
-                           (let ((pos (list-find-position sym syms)))
+                        (eopl:error 'apply-env-ref "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+                           (let ((pos (rib-find-position sym syms)))
                              (if (number? pos)
-                                 (list-ref vals pos)
-                                 (apply-env old-env sym))))
-      (recursively-extended-env-record (proc-names idss bodies old-env)
-                                       (let ((pos (list-find-position sym proc-names)))
-                                         (if (number? pos)
-                                             (closure (list-ref idss pos)
-                                                      (list-ref bodies pos)
-                                                      env)
-                                             (apply-env old-env sym)))))))
+                                 (a-ref pos vals)
+                                 (apply-env-ref env sym)))))))
+
+
+;*******************************************************************************************
+;Referencias
+
+(define-datatype reference reference?
+  (a-ref (position integer?)
+         (vec vector?)))
+
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos)))))
+
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val)))))
 
 
 ;****************************************************************************************
 ;Funciones Auxiliares
 
-; Función para mostrar números complejos de forma legible
-(define show-complex
-  (lambda (z)
-    (cases complex-number z
-      (complex (real imag)
-               (let ((real-str (if (integer? real) 
-                                   (number->string (inexact->exact real))
-                                   (number->string real)))
-                     (imag-str (if (integer? imag) 
-                                   (number->string (inexact->exact imag))
-                                   (number->string imag))))
-                 (cond
-                   ((= imag 0) real-str)
-                   ((= real 0) 
-                    (cond
-                      ((= imag 1) "i")
-                      ((= imag -1) "-i")
-                      (else (string-append imag-str "i"))))
-                   ((= imag 1) (string-append real-str "+i"))
-                   ((= imag -1) (string-append real-str "-i"))
-                   ((> imag 0) (string-append real-str "+" imag-str "i"))
-                   (else (string-append real-str imag-str "i"))))))))
-
 ; funciones auxiliares para encontrar la posición de un símbolo
-; en la lista de símbolos de unambiente
+; en la lista de símbolos de un ambiente
+
+(define rib-find-position 
+  (lambda (sym los)
+    (list-find-position sym los)))
 
 (define list-find-position
   (lambda (sym los)
@@ -459,96 +444,94 @@ add1(x)")
 (define un-programa-dificil
     (a-program una-expresion-dificil))
 
-;******************************************************************************************
-;Ejemplos de uso de números complejos
+(interpretador)
 
-;(interpretador)
-
-; Ejemplo 1: Crear números complejos y sumarlos
-(define ejemplo1-program
-  (scan&parse "let
-                 a = complex(3, 5i)
-                 b = complex(6, -2i)
-               in
-                 sum-complex(a, b)"))
-
-; Ejemplo 2: Multiplicación de números complejos
-(define ejemplo2-program
-  (scan&parse "let
-                 a = complex(3, 5i)
-                 b = complex(6, -2i)
-               in
-                 mult-complex(a, b)"))
-
-;******************************************************************************************
-;Ejemplos de uso del SWITCH
-;(interpretador)
-
-(define switch-ejemplo1
-  (scan&parse "let
-                 x = 5
-                 y = 2
-                 f = proc(a b) +(a,b)
-               in
-                 switch ( -(x,y) ) {
-                   case 1: {
-                     (f x -3)
-                   }
-                   case 2: {
-                     (f y 9)
-                   }
-                   case 3: {
-                     (f x y)
-                   }
-                   default: {
-                     \"casoPorDefecto\"
-                   }
-                 }"))
-
-; Ejemplo con X=5, Y=4 -> switch evalúa -(5,4) = 1 -> ejecuta caso 1 -> (f 5 -3) = 2
-(define switch-ejemplo2
-  (scan&parse "let
-                 x = 5
-                 y = 4
-                 f = proc(a b) +(a,b)
-               in
-                 switch ( -(x,y) ) {
-                   case 1: {
-                     (f x -3)
-                   }
-                   case 2: {
-                     (f y 9)
-                   }
-                   case 3: {
-                     (f x y)
-                   }
-                   default: {
-                     \"casoPorDefecto\"
-                   }
-                 }"))
-
-; Ejemplo con X=5, Y=20 -> switch evalúa -(5,20) = -15 -> ejecuta default
-(define switch-ejemplo3
-  (scan&parse "let
-                 x = 5
-                 y = 20
-                 f = proc(a b) +(a,b)
-               in
-                 switch ( -(x,y) ) {
-                   case 1: {
-                     (f x -3)
-                   }
-                   case 2: {
-                     (f y 9)
-                   }
-                   case 3: {
-                     (f x y)
-                   }
-                   default: {
-                     \"casoPorDefecto\"
-                   }
-                 }"))
-
-
-
-
+let
+    Forma = proc(x_inicial y_inicial)
+              let
+                Ubicacion_x = x_inicial
+                Ubicacion_y = y_inicial
+              in
+                proc(mensaje)
+                  if -(mensaje, 1)
+                  then
+                    if -(mensaje, 2)
+                    then
+                      if -(mensaje, 3)
+                      then
+                        proc(nuevoValor)
+                          begin
+                            set Ubicacion_y = nuevoValor;
+                            Ubicacion_y
+                          end
+                      else
+                        Ubicacion_y
+                    else
+                      proc(nuevoValor)
+                        begin
+                          set Ubicacion_x = nuevoValor;
+                          Ubicacion_x
+                        end
+                  else
+                    Ubicacion_x
+    Circulo = proc(rad x_inicial y_inicial)
+                let
+                  super = (Forma x_inicial y_inicial)
+                  radio = rad
+                in
+                  proc(mensaje)
+                    if -(mensaje, 5)
+                    then
+                      if -(mensaje, 6)
+                      then
+                        radio
+                      else
+                        proc(nuevoValor)
+                          begin
+                            set radio = nuevoValor;
+                            radio
+                          end
+                    else
+                      (super mensaje)
+    Rectangulo = proc(base altura x_inicial y_inicial)
+                   let
+                     super = (Forma x_inicial y_inicial)
+                     lado1 = base
+                     lado2 = altura
+                   in
+                     proc(mensaje)
+                       if -(mensaje, 5)
+                       then
+                         if -(mensaje, 6)
+                         then
+                           if -(mensaje, 7)
+                           then
+                             if -(mensaje, 8)
+                             then
+                               lado2
+                             else
+                               proc(nuevoValor)
+                                 begin
+                                   set lado2 = nuevoValor;
+                                   lado2
+                                 end
+                           else
+                             lado1
+                         else
+                           proc(nuevoValor)
+                             begin
+                               set lado1 = nuevoValor;
+                               lado1
+                             end
+                       else
+                         (super mensaje)
+  in
+    let
+      circulo = (Circulo 45 3 4)
+      rectangulo = (Rectangulo 20 30 9 6)
+    in
+      begin
+        ((circulo 6) 50);      % setRadio(50)
+        ((rectangulo 2) 15);   % setX(15) -
+        +(((circulo 5)), +(((circulo 1)), +(((circulo 3)), +(((rectangulo 5)), +(((rectangulo 7)), +(((rectangulo 1)), ((rectangulo 3))))))))
+      end
